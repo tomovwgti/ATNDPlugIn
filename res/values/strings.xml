@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- アプリケーション名 -->
+    <string name="app_name">twicca ATND プラグイン</string>
+	<!-- twiccaでリストで見える -->
+    <string name="eventlist">ATNDを見る</string>
+	<!-- ATNDのイベント情報表示 -->
+    <string name="eventinfo">イベント情報</string>
+	<!-- ATNDのイベン参加者表示 -->
+    <string name="userinfo">イベント参加者</string>
+	<!-- Mapへのポイント表示 -->
+    <string name="mapinfo">地図</string>
+</resources>
