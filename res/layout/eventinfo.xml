@@ -6,7 +6,15 @@
     >
 <TextView
 	android:id="@+id/eventtitle"
-	android:textSize="24dp"
+	android:textSize="20dp"
+	android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:height="60dp"
+	android:gravity="center_vertical|center_horizontal"/>
+<TextView
+    android:id="@+id/participant"
+	android:text="@string/userinfo"
+	android:textSize="18dp"
 	android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
     android:height="60dp"

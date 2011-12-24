@@ -7,7 +7,7 @@
 	<!-- ATNDのイベント情報表示 -->
     <string name="eventinfo">イベント情報</string>
 	<!-- ATNDのイベン参加者表示 -->
-    <string name="userinfo">イベント参加者</string>
+    <string name="userinfo">イベント参加者を見る</string>
 	<!-- Mapへのポイント表示 -->
     <string name="mapinfo">地図</string>
 </resources>

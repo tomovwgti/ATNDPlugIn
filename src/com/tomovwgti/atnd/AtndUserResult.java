@@ -1,3 +1,4 @@
+
 package com.tomovwgti.atnd;
 
 /**
@@ -5,13 +6,13 @@ package com.tomovwgti.atnd;
  */
 public class AtndUserResult {
 
-	public static final String TWITTER_ID = "Twitter ID";
-	public static final String NICKNAME   = "ニックネーム";
+    public static final String TWITTER_ID = "Twitter ID";
+    public static final String NICKNAME = "ニックネーム";
 
-	public String twitter_id;
-	public String nickname;
-	public String twitter_img;
-	
-	// Twitterフラグ
-	public boolean IsTwitter = true;
+    public String twitter_id;
+    public String nickname;
+    public String twitter_img;
+
+    // Twitterフラグ
+    public boolean IsTwitter = true;
 }

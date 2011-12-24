@@ -1,3 +1,4 @@
+
 package com.tomovwgti.atnd.lib;
 
 /**
@@ -5,13 +6,13 @@ package com.tomovwgti.atnd.lib;
  */
 public class ListViewItem {
 
-	/** ImageのURL */
-	public String url;
-	/** 表示するテキスト. */
-	public String id;
+    /** ImageのURL */
+    public String url;
+    /** 表示するテキスト. */
+    public String id;
 
-	public ListViewItem(String text, String url){
-		this.id = text;
-		this.url = url;
-	}
+    public ListViewItem(String text, String url) {
+        this.id = text;
+        this.url = url;
+    }
 }
