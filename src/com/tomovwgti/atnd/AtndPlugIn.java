@@ -20,7 +20,8 @@ public class AtndPlugIn extends Activity {
 
         // プラグイン起動
         Intent intent = getIntent();
-        String name = intent.getStringExtra(Intent.EXTRA_TEXT);
+        // String name = intent.getStringExtra(Intent.EXTRA_TEXT);
+        String name = "tomo_watanabe";
 
         // ネットワーク接続の確認
         if (!ConnectionStatus.isConnected(this)) {

@@ -16,6 +16,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -24,6 +25,7 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.tomovwgti.atnd.json.AtndEventResult;
 import com.tomovwgti.atnd.lib.Iso8601;
 
 /**
@@ -33,7 +35,7 @@ public class AtndEventInfo extends Activity {
 
     private AtndEventResult event = null;
     private TextView eventTitle;
-    private View viewOwner;
+    private ViewGroup viewOwner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,16 +51,6 @@ public class AtndEventInfo extends Activity {
         eventTitle.setTextColor(Color.GREEN);
         eventTitle.setBackgroundColor(Color.DKGRAY);
 
-        // 詳細ページへジャンプ
-        eventTitle.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://atnd.org/events/"
-                        + event.event_id));
-                startActivity(intent);
-            }
-        });
-
         // 参加者一覧を表示する
         TextView participant = (TextView) findViewById(R.id.participant);
         participant.setTextColor(Color.BLUE);
@@ -68,11 +60,13 @@ public class AtndEventInfo extends Activity {
             public void onClick(View v) {
                 // 参加者の取得
                 Intent intent = new Intent(AtndEventInfo.this, AtndUsers.class);
-                intent.putExtra("EVENTID", event.event_id);
+                intent.putExtra("EVENTID", event.eventId);
                 intent.putExtra("EVENT", event.title);
                 startActivity(intent);
             }
         });
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(AtndEventInfo.this);
 
         ListView listView = (ListView) findViewById(R.id.eventinfo);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
@@ -85,8 +79,10 @@ public class AtndEventInfo extends Activity {
                 View view = null;
                 switch (position) {
                     case 0: // 概要
-                        view = descriptionInfo(item);
-                        break;
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri
+                                .parse("http://atnd.org/events/" + event.eventId));
+                        startActivity(intent);
+                        return;
                     case 1: // 主催者
                         ownerInfo(item);
                         view = viewOwner;
@@ -105,7 +101,7 @@ public class AtndEventInfo extends Activity {
                         mapInfo(item);
                         return;
                 }
-                new AlertDialog.Builder(AtndEventInfo.this).setView(view).show();
+                builder.setView(view).show();
             }
         });
 
@@ -114,7 +110,7 @@ public class AtndEventInfo extends Activity {
         final ImageDownloader imageDownloader = new ImageDownloader();
         // ContextからLayoutInflaterを取得
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        viewOwner = inflater.inflate(R.layout.listview_item, null);
+        viewOwner = (ViewGroup) inflater.inflate(R.layout.listview_item, null);
         // アイコンにTwitter imgを設定
         ImageView imageView = (ImageView) viewOwner.findViewWithTag("icon");
         // 主催者イメージをダウンロード
@@ -227,8 +223,7 @@ public class AtndEventInfo extends Activity {
                     case 0:
                         // ピンポイント地図
                         mapIntent = new Intent();
-                        mapIntent.setClassName("com.tomovwgti.atnd",
-                                "com.tomovwgti.atnd.PointMapView");
+                        mapIntent.setClass(AtndEventInfo.this, PointMapView.class);
                         mapIntent.putExtra("LATLON", maps);
                         mapIntent.putExtra("PLACE", event.getItem(4)); // 会場の名称
                         break;

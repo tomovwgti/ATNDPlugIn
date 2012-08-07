@@ -1,16 +1,16 @@
 
 package com.tomovwgti.atnd;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import net.vvakame.util.jsonpullparser.JsonFormatException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -27,9 +27,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -45,12 +42,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.tomovwgti.atnd.json.AtndEventResponse;
+import com.tomovwgti.atnd.json.AtndEventResponseGen;
+import com.tomovwgti.atnd.json.AtndEventResult;
 import com.tomovwgti.atnd.lib.Iso8601;
 
 /**
  * ATNDの登録イベント一覧をネットワークから取得
  */
-public class AtndEventTask extends AsyncTask<String, Void, HttpResponse> {
+public class AtndEventTask extends AsyncTask<String, Void, Boolean> {
     // ATND URI
     private static final String ATND_URI = "api.atnd.org";
     // プログレスバー
@@ -95,7 +95,7 @@ public class AtndEventTask extends AsyncTask<String, Void, HttpResponse> {
      * バックグランドでデータ取得を行う
      */
     @Override
-    protected HttpResponse doInBackground(String... twitter_id) {
+    protected Boolean doInBackground(String... twitter_id) {
         // URIを設定
         Uri.Builder uriBuilder = new Uri.Builder();
         uriBuilder.path("/events/");
@@ -111,111 +111,73 @@ public class AtndEventTask extends AsyncTask<String, Void, HttpResponse> {
                     .toString()));
         } catch (Exception e) {
             Log.i("ERROR", "HTTP Request error");
-            ViewToast();
-            return null;
-        }
-        return response;
-    }
-
-    /**
-     * ネットワークからデータ受信後の処理
-     */
-    @Override
-    protected void onPostExecute(HttpResponse response) {
-        // プログレスバーを消去
-        progress.dismiss();
-        if (response == null) {
-            return;
+            return false;
         }
 
         // レスポンスコードを確認
         try {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 Log.i("ERROR", "Invalid Response code " + response.getStatusLine().getStatusCode());
-                ViewToast();
-                return;
+                return false;
             }
         } catch (Exception e) {
             Log.e("ERROR", "Connection Error");
-            ViewToast();
-            return;
-        }
-
-        // レスポンスをStringに変換
-        StringBuilder json = new StringBuilder();
-        try {
-            HttpEntity entity = response.getEntity();
-            InputStream input = entity.getContent();
-            InputStreamReader reader = new InputStreamReader(input);
-            BufferedReader bufReader = new BufferedReader(reader);
-            String line;
-            while ((line = bufReader.readLine()) != null) {
-                json.append(line);
-            }
-        } catch (IOException e) {
-            Log.i("ERROR", "Read Buffer error");
-            ViewToast();
-            return;
+            return false;
         }
 
         // JSON解析
+        AtndEventResponse eventResult = null;
         try {
-            // 取得するデータ
-            final String EVENTS = "events";
-            final String EVENTID = "event_id";
-            final String TITLE = "title";
-            final String DESC = "description";
-            final String OWNER = "owner_twitter_id";
-            final String ICON = "owner_twitter_img";
-            final String START = "started_at";
-            final String END = "ended_at";
-            final String ADDRESS = "address";
-            final String PLACE = "place";
-            final String LAT = "lat";
-            final String LON = "lon";
+            HttpEntity entity = response.getEntity();
+            InputStream input = entity.getContent();
+            eventResult = AtndEventResponseGen.get(input);
+        } catch (IOException e) {
+            Log.i("ERROR", "Read Buffer error");
+            return false;
+        } catch (JsonFormatException e) {
+            Log.i("ERROR", "JSON Parse error");
+            return false;
+        }
 
-            JSONObject jsonRoot = new JSONObject(json.toString());
-            JSONArray jsonRslts = jsonRoot.getJSONArray(EVENTS);
+        // 日付確認
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
 
-            Calendar today = Calendar.getInstance();
-            today.set(Calendar.HOUR_OF_DAY, 0);
-            today.set(Calendar.MINUTE, 0);
-            today.set(Calendar.SECOND, 0);
-            today.set(Calendar.MILLISECOND, 0);
-
-            for (int i = 0; i < jsonRslts.length(); i++) {
-                AtndEventResult tmp = new AtndEventResult();
-                JSONObject jsonRslt = jsonRslts.getJSONObject(i);
-                tmp.event_id = jsonRslt.getString(EVENTID);
-                tmp.description = jsonRslt.getString(DESC);
-                tmp.icon = jsonRslt.getString(ICON);
-                tmp.owner = jsonRslt.getString(OWNER);
-                if (tmp.owner.equals("null")) {
-                    // オーナーがTwitterIDではない
-                    tmp.owner = jsonRslt.getString("owner_nickname");
-                    tmp.icon = null; // icon
-                    tmp.IsOwner = false;
-                }
-                tmp.start = jsonRslt.getString(START);
-                tmp.end = jsonRslt.getString(END);
-                tmp.address = jsonRslt.getString(ADDRESS);
-                tmp.place = jsonRslt.getString(PLACE);
-                tmp.lat = jsonRslt.getString(LAT);
-                tmp.lon = jsonRslt.getString(LON);
-                Calendar calendar = Iso8601.getCalendar(tmp.start);
-                calendar.set(Calendar.HOUR_OF_DAY, 0);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
-                calendar.set(Calendar.MILLISECOND, 0);
-                if (!calendar.before(today)) {
-                    // 今日を含む未来の予定のみ登録
-                    String event_day = (calendar.get(Calendar.MONTH) + 1) + "/"
-                            + calendar.get(Calendar.DAY_OF_MONTH);
-                    tmp.title = event_day + "  " + jsonRslt.getString(TITLE);
-                    map.put(tmp.start, tmp);
-                }
+        List<AtndEventResult> eventlist = eventResult.getEvents();
+        for (AtndEventResult list : eventlist) {
+            if (list.owner == null || list.owner.equals("null")) {
+                // オーナーがTwitterIDではない
+                list.owner = list.getOwnerNickname();
+                list.icon = null; // icon
+                list.IsOwner = false;
             }
-        } catch (JSONException e) {
+            Calendar calendar = Iso8601.getCalendar(list.start);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            if (!calendar.before(today)) {
+                // 今日を含む未来の予定のみ登録
+                String event_day = (calendar.get(Calendar.MONTH) + 1) + "/"
+                        + calendar.get(Calendar.DAY_OF_MONTH);
+                list.setTitle(event_day + "  " + list.getTitle());
+                map.put(list.start, list);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * ネットワークからデータ受信後の処理
+     */
+    @Override
+    protected void onPostExecute(Boolean flag) {
+        // プログレスバーを消去
+        progress.dismiss();
+        if (!flag) {
             ViewToast();
             return;
         }

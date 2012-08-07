@@ -26,7 +26,7 @@ public class AtndUsers extends Activity {
         setContentView(R.layout.userinfo);
 
         // イベントIDを取得
-        final String eventId = getIntent().getStringExtra("EVENTID");
+        final int eventId = getIntent().getIntExtra("EVENTID", 0);
         // イベントの名を取得
         final String event = getIntent().getStringExtra("EVENT");
 
@@ -52,6 +52,6 @@ public class AtndUsers extends Activity {
 
         // イベント参加者の取得
         users = new AtndUserTask(this);
-        users.execute(eventId);
+        users.execute(String.valueOf(eventId));
     }
 }

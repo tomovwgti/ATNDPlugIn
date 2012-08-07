@@ -6,17 +6,17 @@
     <application android:icon="@drawable/atndicon" android:label="@string/app_name">
         <activity android:name=".AtndPlugIn"
                   android:label="@string/eventlist">
-<!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
--->
+<!--
             <intent-filter>
                 <action android:name="jp.r246.twicca.ACTION_SHOW_USER" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="jp.r246.twicca.category.OWNER" />
             </intent-filter>
+-->
         </activity>
 
 		<activity android:name=".AtndEventInfo"

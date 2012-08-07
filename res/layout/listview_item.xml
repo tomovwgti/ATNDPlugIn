@@ -22,7 +22,7 @@
             android:id="@+id/TextView"
             android:text="TextView"
             android:tag="text"
-            android:layout_marginLeft="15dip" 
+            android:layout_marginLeft="15dp"
             android:layout_gravity="center_vertical">
             </TextView>
     </LinearLayout>

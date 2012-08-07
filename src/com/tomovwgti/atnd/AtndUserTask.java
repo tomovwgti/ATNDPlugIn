@@ -1,12 +1,12 @@
 
 package com.tomovwgti.atnd;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.vvakame.util.jsonpullparser.JsonFormatException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -23,9 +23,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -39,6 +36,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.tomovwgti.atnd.json.AtndUserResponse;
+import com.tomovwgti.atnd.json.AtndUserResponseGen;
+import com.tomovwgti.atnd.json.Users;
 import com.tomovwgti.atnd.lib.ListViewItem;
 import com.tomovwgti.atnd.lib.UserArrayAdapter;
 
@@ -53,7 +53,7 @@ public class AtndUserTask extends AsyncTask<String, Void, Boolean> {
     private Activity activity = null;
     private final DefaultHttpClient httpClient;
     // 検索結果
-    private List<AtndUserResult> users;
+    private List<Users> users;
     // リストビュー用
     private List<String> userlist;
 
@@ -118,73 +118,45 @@ public class AtndUserTask extends AsyncTask<String, Void, Boolean> {
             return false;
         }
 
-        // レスポンスをStringに変換
-        StringBuilder json = new StringBuilder();
+        // JSON解析
+        AtndUserResponse userResult = null;
         try {
             HttpEntity entity = response.getEntity();
             InputStream input = entity.getContent();
-            InputStreamReader reader = new InputStreamReader(input);
-            BufferedReader bufReader = new BufferedReader(reader);
-            String line;
-            while ((line = bufReader.readLine()) != null) {
-                json.append(line);
-            }
+            userResult = AtndUserResponseGen.get(input);
         } catch (IOException e) {
             Log.i("ERROR", "Read Buffer error");
-            ViewToast();
+            return false;
+        } catch (JsonFormatException e) {
+            Log.i("ERROR", "JSON Parse error");
             return false;
         }
 
-        // JSON解析
-        try {
-            // 取得するデータ
-            final String EVENTS = "events";
-            final String USERS = "users";
-            final String TWIITERID = "twitter_id";
-            final String TWITTERIMG = "twitter_img";
-            final String NICKNAME = "nickname";
+        users = new ArrayList<Users>();
+        userlist = new ArrayList<String>();
+        items = new ArrayList<ListViewItem>();
 
-            JSONObject jsonRoot = new JSONObject(json.toString());
-            JSONArray jsonRslts = jsonRoot.getJSONArray(EVENTS);
-            JSONObject jsonRslt = jsonRslts.getJSONObject(0);
-            JSONArray jsonUsers = jsonRslt.getJSONArray(USERS);
-
-            users = new ArrayList<AtndUserResult>();
-            userlist = new ArrayList<String>();
-            items = new ArrayList<ListViewItem>();
-
-            for (int i = 0; i < jsonUsers.length(); i++) {
-                AtndUserResult tmp = new AtndUserResult();
-                String imageUrl;
-                String idText;
-                JSONObject jsonObj = jsonUsers.getJSONObject(i);
-                // Twitter ID
-                tmp.twitter_id = jsonObj.getString(TWIITERID);
-                // Twitter Icon url
-                tmp.twitter_img = jsonObj.getString(TWITTERIMG);
-                // NickName
-                tmp.nickname = jsonObj.getString(NICKNAME);
-                if (tmp.twitter_id.equals("null")) {
-                    tmp.IsTwitter = false;
-                    userlist.add(tmp.nickname);
-                    // ListView
-                    idText = tmp.nickname;
-                    imageUrl = null;
-                } else {
-                    userlist.add(tmp.twitter_id);
-                    userlist.add(tmp.nickname);
-                    // ListView
-                    idText = tmp.twitter_id;
-                    imageUrl = tmp.twitter_img;
-                }
-                users.add(tmp);
-                // ListViewのパーツ
-                ListViewItem item = new ListViewItem(idText, imageUrl);
-                items.add(item);
+        List<Users> user = userResult.getEvents().get(0).getUsers();
+        for (Users list : user) {
+            String imageUrl;
+            String idText;
+            if (list.twitterId == null || list.twitterId.equals("null")) {
+                list.IsTwitter = false;
+                userlist.add(list.nickname);
+                // ListView
+                idText = list.nickname;
+                imageUrl = null;
+            } else {
+                userlist.add(list.twitterId);
+                userlist.add(list.nickname);
+                // ListView
+                idText = list.twitterId;
+                imageUrl = list.twitterImg;
             }
-        } catch (JSONException e) {
-            ViewToast();
-            return false;
+            users.add(list);
+            // ListViewのパーツ
+            ListViewItem item = new ListViewItem(idText, imageUrl);
+            items.add(item);
         }
         return true;
     }
@@ -223,10 +195,10 @@ public class AtndUserTask extends AsyncTask<String, Void, Boolean> {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 // String item = userlist.get(position);
-                AtndUserResult user = users.get(position);
+                Users user = users.get(position);
                 // Twitter IDかどうか調べる
                 if (user.IsTwitter) {
-                    String url = "http://twitter.com/" + user.twitter_id;
+                    String url = "http://twitter.com/" + user.twitterId;
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     activity.startActivity(intent);
                 }
