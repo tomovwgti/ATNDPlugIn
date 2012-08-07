@@ -3,7 +3,6 @@ package com.tomovwgti.atnd;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
@@ -28,43 +27,29 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Intent;
+import android.content.Context;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Bundle;
+import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import com.tomovwgti.atnd.json.AtndEventResponse;
 import com.tomovwgti.atnd.json.AtndEventResponseGen;
 import com.tomovwgti.atnd.json.AtndEventResult;
 import com.tomovwgti.atnd.lib.Iso8601;
 
-/**
- * ATNDの登録イベント一覧をネットワークから取得
- */
-public class AtndEventTask extends AsyncTask<String, Void, Boolean> {
+public class AtndEventLoader extends AsyncTaskLoader<Map<String, AtndEventResult>> {
+    static final String TAG = AtndEventLoader.class.getSimpleName();
+
     // ATND URI
     private static final String ATND_URI = "api.atnd.org";
-    // プログレスバー
-    private ProgressDialog progress;
-    private Activity activity = null;
     private final DefaultHttpClient httpClient;
-    // 検索結果
-    private List<AtndEventResult> events;
-    // リストビュー用
-    private List<String> list;
     private Map<String, AtndEventResult> map;
+    private String twitterId;
 
-    public AtndEventTask(Activity activity) {
-        this.activity = activity;
+    public AtndEventLoader(Context context, String name) {
+        super(context);
+
+        this.twitterId = name;
         map = new TreeMap<String, AtndEventResult>(new DescComparator());
         // スキーマ登録
         SchemeRegistry schReg = new SchemeRegistry();
@@ -80,27 +65,16 @@ public class AtndEventTask extends AsyncTask<String, Void, Boolean> {
         // HTTPクライアント生成
         httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(httpParams, schReg),
                 httpParams);
+
     }
 
     @Override
-    protected void onPreExecute() {
-        // プログレスバーを出す
-        progress = new ProgressDialog(activity);
-        progress.setMessage("読み込み中...");
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.show();
-    }
-
-    /**
-     * バックグランドでデータ取得を行う
-     */
-    @Override
-    protected Boolean doInBackground(String... twitter_id) {
+    public Map<String, AtndEventResult> loadInBackground() {
         // URIを設定
         Uri.Builder uriBuilder = new Uri.Builder();
         uriBuilder.path("/events/");
         // event_id
-        uriBuilder.appendQueryParameter("twitter_id", twitter_id[0]);
+        uriBuilder.appendQueryParameter("twitter_id", twitterId);
         // format
         uriBuilder.appendQueryParameter("format", "json");
 
@@ -111,18 +85,18 @@ public class AtndEventTask extends AsyncTask<String, Void, Boolean> {
                     .toString()));
         } catch (Exception e) {
             Log.i("ERROR", "HTTP Request error");
-            return false;
+            return null;
         }
 
         // レスポンスコードを確認
         try {
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 Log.i("ERROR", "Invalid Response code " + response.getStatusLine().getStatusCode());
-                return false;
+                return null;
             }
         } catch (Exception e) {
             Log.e("ERROR", "Connection Error");
-            return false;
+            return null;
         }
 
         // JSON解析
@@ -133,10 +107,10 @@ public class AtndEventTask extends AsyncTask<String, Void, Boolean> {
             eventResult = AtndEventResponseGen.get(input);
         } catch (IOException e) {
             Log.i("ERROR", "Read Buffer error");
-            return false;
+            return null;
         } catch (JsonFormatException e) {
             Log.i("ERROR", "JSON Parse error");
-            return false;
+            return null;
         }
 
         // 日付確認
@@ -167,61 +141,12 @@ public class AtndEventTask extends AsyncTask<String, Void, Boolean> {
                 map.put(list.start, list);
             }
         }
-        return true;
+        return map;
     }
 
-    /**
-     * ネットワークからデータ受信後の処理
-     */
     @Override
-    protected void onPostExecute(Boolean flag) {
-        // プログレスバーを消去
-        progress.dismiss();
-        if (!flag) {
-            ViewToast();
-            return;
-        }
-
-        // イベント取得
-        events = new ArrayList<AtndEventResult>();
-        list = new ArrayList<String>();
-        for (String key : map.keySet()) {
-            // 各イベントのタイトルをリスト化
-            list.add(map.get(key).title);
-            // イベントを格納
-            events.add(map.get(key));
-        }
-        // リストビューに表示
-        setItems();
-    }
-
-    /**
-     * 参加しているイベントをリスト表示する
-     */
-    private void setItems() {
-        ListView listView = (ListView) activity.findViewById(R.id.listview);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity,
-                android.R.layout.simple_list_item_1, list);
-        listView.setAdapter(adapter);
-        // リストが空のときに表示されるViewを指定
-        View emptyView = activity.findViewById(R.id.empty);
-        listView.setEmptyView(emptyView);
-        if (list.size() == 0) {
-            // 参加イベント無しの場合
-            emptyView.setVisibility(View.VISIBLE);
-        }
-        listView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                // 表示するデータを設定する
-                AtndEventResult eventInfo = events.get(position);
-                Intent intent = new Intent(activity, AtndEventInfo.class);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("EVENT", eventInfo);
-                intent.putExtras(bundle);
-                activity.startActivity(intent);
-            }
-        });
+    protected void onStartLoading() {
+        forceLoad();
     }
 
     /**
@@ -232,9 +157,5 @@ public class AtndEventTask extends AsyncTask<String, Void, Boolean> {
         public int compare(Object s1, Object s2) {
             return ((Comparable) s1).compareTo(s2) * -1;
         }
-    }
-
-    private void ViewToast() {
-        Toast.makeText(activity, "通信に失敗しました", Toast.LENGTH_LONG).show();
     }
 }

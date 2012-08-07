@@ -122,21 +122,6 @@ public class AtndEventInfo extends Activity {
     }
 
     /**
-     * 概要
-     * 
-     * @param item
-     * @return
-     */
-    private View descriptionInfo(String item) {
-        TextView tv = new TextView(AtndEventInfo.this);
-        tv.setText(item);
-        tv.setTextSize(18);
-        ScrollView sv = new ScrollView(AtndEventInfo.this);
-        sv.addView(tv);
-        return sv;
-    }
-
-    /**
      * 主催者
      * 
      * @param item
