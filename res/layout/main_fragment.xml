@@ -16,5 +16,4 @@
 	android:gravity="center"
 	android:visibility="invisible"
 	android:text="参加しているイベントはありません" />
-	/>
 </LinearLayout>

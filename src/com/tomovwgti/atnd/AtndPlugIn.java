@@ -33,7 +33,7 @@ public class AtndPlugIn extends FragmentActivity implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.activity_main);
 
         // プラグイン起動
         Intent intent = getIntent();
@@ -65,8 +65,7 @@ public class AtndPlugIn extends FragmentActivity implements
         progress.show();
 
         // オブジェクト作って返すだけ
-        AtndEventLoader loader = new AtndEventLoader(getApplication(),
-                bundle.getString("id"));
+        AtndEventLoader loader = new AtndEventLoader(getApplication(), bundle.getString("id"));
         loader.forceLoad(); // これでロードが始まる。AsyncTaskLoader#onStartLoading内に実装するのも可。
         return loader;
     }
@@ -137,5 +136,4 @@ public class AtndPlugIn extends FragmentActivity implements
     private void ViewToast() {
         Toast.makeText(this, "通信に失敗しました", Toast.LENGTH_LONG).show();
     }
-
 }

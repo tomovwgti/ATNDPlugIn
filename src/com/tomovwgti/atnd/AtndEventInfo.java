@@ -76,7 +76,6 @@ public class AtndEventInfo extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 String item = event.getItem(position + 1);
-                View view = null;
                 switch (position) {
                     case 0: // 概要
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri
@@ -85,40 +84,25 @@ public class AtndEventInfo extends Activity {
                         return;
                     case 1: // 主催者
                         ownerInfo(item);
-                        view = viewOwner;
+                        v = viewOwner;
                         break;
                     case 2: // 場所
-                        view = addressInfo(item);
+                        v = addressInfo(item);
                         break;
                     case 3: // 会場
-                        view = venueInfo(item);
+                        v = venueInfo(item);
                         break;
                     case 4: // 開始時間
                     case 5: // 終了時間
-                        view = daytimeInfo(item);
+                        v = daytimeInfo(item);
                         break;
                     case 6: // 地図
                         mapInfo(item);
                         return;
                 }
-                builder.setView(view).show();
+                builder.setView(v).create().show();
             }
         });
-
-        // 主催者のみ特別に呼ばれたときに生成しておく
-        // 主催者のTwitterアイコンを読み込んでおく
-        final ImageDownloader imageDownloader = new ImageDownloader();
-        // ContextからLayoutInflaterを取得
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        viewOwner = (ViewGroup) inflater.inflate(R.layout.listview_item, null);
-        // アイコンにTwitter imgを設定
-        ImageView imageView = (ImageView) viewOwner.findViewWithTag("icon");
-        // 主催者イメージをダウンロード
-        if (event.icon == null) {
-            imageView.setImageDrawable(getResources().getDrawable(R.drawable.mogu));
-        } else {
-            imageDownloader.download(event.icon, imageView);
-        }
     }
 
     /**
@@ -128,9 +112,23 @@ public class AtndEventInfo extends Activity {
      * @return
      */
     private void ownerInfo(String item) {
+        // 主催者のみ特別に呼ばれたときに生成しておく
+        // 主催者のTwitterアイコンを読み込んでおく
+        final ImageDownloader imageDownloader = new ImageDownloader();
+        // ContextからLayoutInflaterを取得
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        viewOwner = (ViewGroup) inflater.inflate(R.layout.listview_item, null);
+        // アイコンにTwitter imgを設定
+        final ImageView imageView = (ImageView) viewOwner.findViewWithTag("icon");
+        // 主催者イメージをダウンロード
+        if (event.icon == null) {
+            imageView.setImageDrawable(getResources().getDrawable(R.drawable.mogu));
+        } else {
+            imageDownloader.download(event.icon, imageView);
+        }
         // テキストにTwitter idを設定
         TextView textView = (TextView) viewOwner.findViewWithTag("text");
-        textView.setText(item);
+        textView.setText(event.getOwner());
         if (event.IsOwner) {
             textView = viewId(textView);
         }
