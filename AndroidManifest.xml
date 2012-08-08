@@ -4,8 +4,7 @@
       android:versionCode="6"
       android:versionName="1.4">
     <uses-sdk
-        android:minSdkVersion="4"
-        android:targetSdkVersion="15" />
+        android:minSdkVersion="4"/>
     
     <application android:icon="@drawable/atndicon" android:label="@string/app_name">
         <activity android:name=".AtndPlugIn"
@@ -17,22 +16,22 @@
                 <category android:name="jp.r246.twicca.category.OWNER" />
             </intent-filter>
         </activity>
-        
+
+<!--
         <activity android:name="com.tomovwgti.eventatnd.EventAtndPlugIn"
                   android:label="@string/eventatndlist"
                   android:configChanges="orientation|keyboardHidden">
-            <!-- 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-             -->
             <intent-filter>
                 <action android:name="jp.r246.twicca.ACTION_SHOW_USER" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="jp.r246.twicca.category.OWNER" />
             </intent-filter>
         </activity>        
+-->
         
 		<activity android:name=".AtndEventInfo"
 				  android:label="@string/eventinfo"
