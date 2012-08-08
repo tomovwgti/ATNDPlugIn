@@ -3,7 +3,9 @@
       package="com.tomovwgti.atnd"
       android:versionCode="6"
       android:versionName="1.4">
-    <uses-sdk android:minSdkVersion="4" />
+    <uses-sdk
+        android:minSdkVersion="4"
+        android:targetSdkVersion="15" />
     
     <application android:icon="@drawable/atndicon" android:label="@string/app_name">
         <activity android:name=".AtndPlugIn"
