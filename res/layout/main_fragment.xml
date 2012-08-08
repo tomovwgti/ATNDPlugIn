@@ -15,5 +15,5 @@
 	android:layout_height="fill_parent"
 	android:gravity="center"
 	android:visibility="invisible"
-	android:text="参加しているイベントはありません" />
+	android:text="登録しているイベントはありません" />
 </LinearLayout>

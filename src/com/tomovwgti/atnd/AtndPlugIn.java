@@ -45,7 +45,7 @@ public class AtndPlugIn extends FragmentActivity implements
             Toast.makeText(this, "ネットワークに接続できません", Toast.LENGTH_LONG).show();
             return;
         }
-        setTitle("ATND登録リスト");
+        setTitle("ATND beta登録リスト");
 
         // 参加イベントの取得
         Bundle bundle = new Bundle();
