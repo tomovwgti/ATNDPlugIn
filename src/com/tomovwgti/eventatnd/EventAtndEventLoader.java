@@ -1,8 +1,7 @@
 
-package com.tomovwgti.atnd;
+package com.tomovwgti.eventatnd;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
@@ -26,36 +25,38 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 
 import android.content.Context;
 import android.net.Uri;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
 
-import com.tomovwgti.atnd.json.AtndEventResponse;
-import com.tomovwgti.atnd.json.AtndEventResponseGen;
-import com.tomovwgti.atnd.json.AtndEventResult;
+import com.tomovwgti.atnd.AtndEventLoader;
 import com.tomovwgti.atnd.lib.Iso8601;
+import com.tomovwgti.eventatnd.json.EventAtndEventResponse;
+import com.tomovwgti.eventatnd.json.EventAtndEventResponseGen;
+import com.tomovwgti.eventatnd.json.EventAtndEventResult;
 
 /**
- * ATND betaのイベントを検索
+ * event ATNDのイベントを検索
  * 
  * @author tomo
  */
-public class AtndEventLoader extends AsyncTaskLoader<Map<String, AtndEventResult>> {
+public class EventAtndEventLoader extends AsyncTaskLoader<Map<String, EventAtndEventResult>> {
     static final String TAG = AtndEventLoader.class.getSimpleName();
 
     // ATND URI
     private static final String ATND_URI = "api.atnd.org";
     private final DefaultHttpClient httpClient;
-    private Map<String, AtndEventResult> map;
+    private Map<String, EventAtndEventResult> map;
     private String twitterId;
 
-    public AtndEventLoader(Context context, String name) {
+    public EventAtndEventLoader(Context context, String name) {
         super(context);
 
         this.twitterId = name;
-        map = new TreeMap<String, AtndEventResult>(new DescComparator());
+        map = new TreeMap<String, EventAtndEventResult>(new DescComparator());
         // スキーマ登録
         SchemeRegistry schReg = new SchemeRegistry();
         schReg.register(new Scheme(HttpHost.DEFAULT_SCHEME_NAME, PlainSocketFactory
@@ -74,10 +75,10 @@ public class AtndEventLoader extends AsyncTaskLoader<Map<String, AtndEventResult
     }
 
     @Override
-    public Map<String, AtndEventResult> loadInBackground() {
+    public Map<String, EventAtndEventResult> loadInBackground() {
         // URIを設定
         Uri.Builder uriBuilder = new Uri.Builder();
-        uriBuilder.path("/events/");
+        uriBuilder.path("/eventatnd/event/");
         // event_id
         uriBuilder.appendQueryParameter("twitter_id", twitterId);
         // format
@@ -105,11 +106,11 @@ public class AtndEventLoader extends AsyncTaskLoader<Map<String, AtndEventResult
         }
 
         // JSON解析
-        AtndEventResponse eventResult = null;
+        EventAtndEventResponse eventResult = null;
         try {
             HttpEntity entity = response.getEntity();
-            InputStream input = entity.getContent();
-            eventResult = AtndEventResponseGen.get(input);
+            String json = EntityUtils.toString(entity);
+            eventResult = EventAtndEventResponseGen.get(json);
         } catch (IOException e) {
             Log.i("ERROR", "Read Buffer error");
             return null;
@@ -131,9 +132,9 @@ public class AtndEventLoader extends AsyncTaskLoader<Map<String, AtndEventResult
         today.set(Calendar.SECOND, 0);
         today.set(Calendar.MILLISECOND, 0);
 
-        List<AtndEventResult> eventlist = eventResult.getEvents();
-        for (AtndEventResult list : eventlist) {
-            if (list.owner == null || list.owner.equals("null")) {
+        List<EventAtndEventResult> eventlist = eventResult.getEvents().get(0).getEvent();
+        for (EventAtndEventResult list : eventlist) {
+            if (list.owner == null || list.owner.equals("null") || list.owner.equals("")) {
                 // オーナーがTwitterIDではない
                 list.owner = list.getOwnerNickname();
                 list.icon = null; // icon

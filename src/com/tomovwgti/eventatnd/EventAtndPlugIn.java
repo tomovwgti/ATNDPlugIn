@@ -1,5 +1,5 @@
 
-package com.tomovwgti.atnd;
+package com.tomovwgti.eventatnd;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +18,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.tomovwgti.atnd.json.AtndEventResult;
+import com.tomovwgti.atnd.R;
 import com.tomovwgti.atnd.lib.ConnectionStatus;
+import com.tomovwgti.eventatnd.json.EventAtndEventResult;
 
 /**
- * ATNDプラグインのメインクラス twiccaから呼び出される
+ * event ATNDプラグインのメインクラス twiccaから呼び出される
+ * 
+ * @author tomo
  */
-public class AtndPlugIn extends FragmentActivity implements
-        LoaderCallbacks<Map<String, AtndEventResult>> {
-    static final String TAG = AtndPlugIn.class.getSimpleName();
+public class EventAtndPlugIn extends FragmentActivity implements
+        LoaderCallbacks<Map<String, EventAtndEventResult>> {
+    static final String TAG = EventAtndPlugIn.class.getSimpleName();
 
     // プログレスバー
     private ProgressDialog progress;
@@ -45,7 +48,7 @@ public class AtndPlugIn extends FragmentActivity implements
             Toast.makeText(this, "ネットワークに接続できません", Toast.LENGTH_LONG).show();
             return;
         }
-        setTitle("ATND登録リスト");
+        setTitle("eventATND登録リスト");
 
         // 参加イベントの取得
         Bundle bundle = new Bundle();
@@ -57,7 +60,7 @@ public class AtndPlugIn extends FragmentActivity implements
      * ローダーを初期化した際に呼ばれる
      */
     @Override
-    public Loader<Map<String, AtndEventResult>> onCreateLoader(int id, Bundle bundle) {
+    public Loader<Map<String, EventAtndEventResult>> onCreateLoader(int id, Bundle bundle) {
         // プログレスバーを出す
         progress = new ProgressDialog(this);
         progress.setMessage("読み込み中...");
@@ -65,7 +68,8 @@ public class AtndPlugIn extends FragmentActivity implements
         progress.show();
 
         // オブジェクト作って返すだけ
-        AtndEventLoader loader = new AtndEventLoader(getApplication(), bundle.getString("id"));
+        EventAtndEventLoader loader = new EventAtndEventLoader(getApplication(),
+                bundle.getString("id"));
         loader.forceLoad(); // これでロードが始まる。AsyncTaskLoader#onStartLoading内に実装するのも可。
         return loader;
     }
@@ -76,8 +80,8 @@ public class AtndPlugIn extends FragmentActivity implements
      * @param data AsyncTaskLoader#loadInBackgroundで返した値
      */
     @Override
-    public void onLoadFinished(Loader<Map<String, AtndEventResult>> loader,
-            Map<String, AtndEventResult> result) {
+    public void onLoadFinished(Loader<Map<String, EventAtndEventResult>> loader,
+            Map<String, EventAtndEventResult> result) {
         // プログレスバーを消去
         progress.dismiss();
         if (result == null) {
@@ -86,7 +90,7 @@ public class AtndPlugIn extends FragmentActivity implements
         }
 
         // イベント取得
-        List<AtndEventResult> events = new ArrayList<AtndEventResult>();
+        List<EventAtndEventResult> events = new ArrayList<EventAtndEventResult>();
         List<String> list = new ArrayList<String>();
         for (String key : result.keySet()) {
             // 各イベントのタイトルをリスト化
@@ -99,7 +103,7 @@ public class AtndPlugIn extends FragmentActivity implements
     }
 
     @Override
-    public void onLoaderReset(Loader<Map<String, AtndEventResult>> arg0) {
+    public void onLoaderReset(Loader<Map<String, EventAtndEventResult>> arg0) {
         // TODO Auto-generated method stub
 
     }
@@ -107,9 +111,9 @@ public class AtndPlugIn extends FragmentActivity implements
     /**
      * 参加しているイベントをリスト表示する
      */
-    private void setItems(final List<AtndEventResult> events, List<String> list) {
+    private void setItems(final List<EventAtndEventResult> events, List<String> list) {
         ListView listView = (ListView) findViewById(R.id.listview);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(AtndPlugIn.this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(EventAtndPlugIn.this,
                 android.R.layout.simple_list_item_1, list);
         listView.setAdapter(adapter);
         // リストが空のときに表示されるViewを指定
@@ -123,8 +127,8 @@ public class AtndPlugIn extends FragmentActivity implements
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
                 // 表示するデータを設定する
-                AtndEventResult eventInfo = events.get(position);
-                Intent intent = new Intent(AtndPlugIn.this, AtndEventInfo.class);
+                EventAtndEventResult eventInfo = events.get(position);
+                Intent intent = new Intent(EventAtndPlugIn.this, EventAtndEventInfo.class);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable("EVENT", eventInfo);
                 intent.putExtras(bundle);

@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class AtndPlugInFragment extends Fragment {
+    static final String TAG = AtndPlugInFragment.class.getSimpleName();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

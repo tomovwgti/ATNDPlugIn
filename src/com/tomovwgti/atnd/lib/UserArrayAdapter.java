@@ -18,6 +18,7 @@ import com.tomovwgti.atnd.R;
  * アイコンとテキストを表示するためのアダプタ.
  */
 public class UserArrayAdapter extends ArrayAdapter<ListViewItem> {
+    static final String TAG = UserArrayAdapter.class.getSimpleName();
 
     /** XMLからViewを生成 */
     private LayoutInflater inflater;

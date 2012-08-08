@@ -29,6 +29,7 @@ import com.tomovwgti.atnd.lib.UserArrayAdapter;
  * イベントの参加者一覧を表示する
  */
 public class AtndUsers extends FragmentActivity implements LoaderCallbacks<List<Users>> {
+    static final String TAG = AtndUsers.class.getSimpleName();
 
     // プログレスバー
     private ProgressDialog progress;

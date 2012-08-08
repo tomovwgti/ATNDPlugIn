@@ -6,8 +6,14 @@ import java.util.List;
 import net.vvakame.util.jsonpullparser.annotation.JsonKey;
 import net.vvakame.util.jsonpullparser.annotation.JsonModel;
 
+/**
+ * イベントのUserレスポンス
+ * 
+ * @author tomo
+ */
 @JsonModel
 public class AtndUserResult {
+    static final String TAG = AtndUserResult.class.getSimpleName();
 
     public static final String TWITTER_ID = "Twitter ID";
     public static final String NICKNAME = "ニックネーム";

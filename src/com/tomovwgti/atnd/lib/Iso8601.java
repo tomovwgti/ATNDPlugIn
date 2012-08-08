@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
  * 日時の分解
  */
 public class Iso8601 {
+    static final String TAG = Iso8601.class.getSimpleName();
 
     private static final Pattern pattern = Pattern
             .compile("(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})");

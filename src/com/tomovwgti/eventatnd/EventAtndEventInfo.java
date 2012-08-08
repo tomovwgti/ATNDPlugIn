@@ -1,5 +1,5 @@
 
-package com.tomovwgti.atnd;
+package com.tomovwgti.eventatnd;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -25,51 +25,42 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.tomovwgti.atnd.ImageDownloader;
+import com.tomovwgti.atnd.PointMapView;
+import com.tomovwgti.atnd.R;
 import com.tomovwgti.atnd.json.AtndEventResult;
 import com.tomovwgti.atnd.lib.Iso8601;
+import com.tomovwgti.eventatnd.json.EventAtndEventResult;
 
 /**
- * ATNDの登録イベント一覧を表示する
+ * event ATNDのイベント取得
+ * 
+ * @author tomo
  */
-public class AtndEventInfo extends Activity {
-    static final String TAG = AtndEventInfo.class.getSimpleName();
+public class EventAtndEventInfo extends Activity {
+    static final String TAG = EventAtndEventInfo.class.getSimpleName();
 
-    private AtndEventResult event = null;
+    private EventAtndEventResult event = null;
     private TextView eventTitle;
     private ViewGroup viewOwner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.eventinfo);
+        setContentView(R.layout.eventatndinfo);
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         event = bundle.getParcelable("EVENT");
 
-        eventTitle = (TextView) findViewById(R.id.eventtitle);
+        eventTitle = (TextView) findViewById(R.id.eventatndtitle);
         eventTitle.setText(event.title);
         eventTitle.setTextColor(Color.GREEN);
         eventTitle.setBackgroundColor(Color.DKGRAY);
 
-        // 参加者一覧を表示する
-        TextView participant = (TextView) findViewById(R.id.participant);
-        participant.setTextColor(Color.BLUE);
-        participant.setBackgroundColor(Color.LTGRAY);
-        participant.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // 参加者の取得
-                Intent intent = new Intent(AtndEventInfo.this, AtndUsers.class);
-                intent.putExtra("EVENTID", event.eventId);
-                intent.putExtra("EVENT", event.title);
-                startActivity(intent);
-            }
-        });
+        final AlertDialog.Builder builder = new AlertDialog.Builder(EventAtndEventInfo.this);
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(AtndEventInfo.this);
-
-        ListView listView = (ListView) findViewById(R.id.eventinfo);
+        ListView listView = (ListView) findViewById(R.id.eventatndinfo);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, eventInfolist);
         listView.setAdapter(adapter);
@@ -79,8 +70,7 @@ public class AtndEventInfo extends Activity {
                 String item = event.getItem(position + 1);
                 switch (position) {
                     case 0: // 概要
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri
-                                .parse("http://atnd.org/events/" + event.eventId));
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(event.url));
                         startActivity(intent);
                         return;
                     case 1: // 主催者
@@ -142,11 +132,11 @@ public class AtndEventInfo extends Activity {
      * @return
      */
     private View addressInfo(String item) {
-        TextView tv = new TextView(AtndEventInfo.this);
+        TextView tv = new TextView(EventAtndEventInfo.this);
         tv.setText(item);
         tv.setTextSize(20);
         tv.setGravity(Gravity.CENTER_HORIZONTAL);
-        ScrollView sv = new ScrollView(AtndEventInfo.this);
+        ScrollView sv = new ScrollView(EventAtndEventInfo.this);
         sv.addView(tv);
         searchWeb(tv, item);
         return sv;
@@ -159,11 +149,11 @@ public class AtndEventInfo extends Activity {
      * @return
      */
     private View venueInfo(String item) {
-        TextView tv = new TextView(AtndEventInfo.this);
+        TextView tv = new TextView(EventAtndEventInfo.this);
         tv.setText(item);
         tv.setTextSize(20);
         tv.setGravity(Gravity.CENTER_HORIZONTAL);
-        ScrollView sv = new ScrollView(AtndEventInfo.this);
+        ScrollView sv = new ScrollView(EventAtndEventInfo.this);
         sv.addView(tv);
         searchWeb(tv, item);
         return sv;
@@ -176,12 +166,12 @@ public class AtndEventInfo extends Activity {
      * @return
      */
     private View daytimeInfo(String item) {
-        TextView tv = new TextView(AtndEventInfo.this);
+        TextView tv = new TextView(EventAtndEventInfo.this);
         String daytime = Iso8601.getString(item);
         tv.setText(daytime);
         tv.setTextSize(24);
         tv.setGravity(Gravity.CENTER_HORIZONTAL);
-        ScrollView sv = new ScrollView(AtndEventInfo.this);
+        ScrollView sv = new ScrollView(EventAtndEventInfo.this);
         sv.addView(tv);
         return sv;
     }
@@ -207,7 +197,7 @@ public class AtndEventInfo extends Activity {
                     case 0:
                         // ピンポイント地図
                         mapIntent = new Intent();
-                        mapIntent.setClass(AtndEventInfo.this, PointMapView.class);
+                        mapIntent.setClass(EventAtndEventInfo.this, PointMapView.class);
                         mapIntent.putExtra("LATLON", maps);
                         mapIntent.putExtra("PLACE", event.getItem(4)); // 会場の名称
                         break;
@@ -248,7 +238,7 @@ public class AtndEventInfo extends Activity {
         v.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                final AlertDialog.Builder alert = new AlertDialog.Builder(AtndEventInfo.this);
+                final AlertDialog.Builder alert = new AlertDialog.Builder(EventAtndEventInfo.this);
                 alert.setMessage("Webで\"" + search + "\"を検索します");
                 // Positiveボタンとリスナを設定
                 alert.setPositiveButton("OK",

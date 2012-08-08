@@ -11,9 +11,10 @@ import com.tomovwgti.atnd.lib.PointOverlay;
 /**
  * 地図上に位置を表示をする
  * 
- * @author tomo_bg5
+ * @author tomo
  */
 public class PointMapView extends MapActivity {
+    static final String TAG = PointMapView.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle arg0) {

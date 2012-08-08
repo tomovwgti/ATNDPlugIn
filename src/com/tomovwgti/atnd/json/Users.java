@@ -4,8 +4,15 @@ package com.tomovwgti.atnd.json;
 import net.vvakame.util.jsonpullparser.annotation.JsonKey;
 import net.vvakame.util.jsonpullparser.annotation.JsonModel;
 
+/**
+ * USer情報
+ * 
+ * @author tomo
+ */
 @JsonModel
 public class Users {
+    static final String TAG = Users.class.getSimpleName();
+
     @JsonKey("twitter_id")
     public String twitterId;
     @JsonKey

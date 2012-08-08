@@ -17,6 +17,7 @@ import com.google.android.maps.OverlayItem;
  * イベント会場のマーカー表示
  */
 public class PointOverlay extends ItemizedOverlay<OverlayItem> {
+    static final String TAG = PointOverlay.class.getSimpleName();
 
     private Context context;
     // マーカー

@@ -13,6 +13,7 @@ import net.vvakame.util.jsonpullparser.annotation.JsonModel;
  */
 @JsonModel
 public class AtndEventResponse {
+    static final String TAG = AtndEventResponse.class.getSimpleName();
 
     @JsonKey("results_returned")
     public int resultsReturned;

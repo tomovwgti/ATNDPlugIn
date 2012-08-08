@@ -32,6 +32,11 @@ import com.tomovwgti.atnd.json.AtndUserResponse;
 import com.tomovwgti.atnd.json.AtndUserResponseGen;
 import com.tomovwgti.atnd.json.Users;
 
+/**
+ * イベント参加者の一覧をダウンロード
+ * 
+ * @author tomo
+ */
 public class AtndUserLoader extends AsyncTaskLoader<List<Users>> {
     static final String TAG = AtndUserLoader.class.getSimpleName();
 
