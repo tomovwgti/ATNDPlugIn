@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,6 +36,14 @@ public class PointMapView extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 以下, Activity内で実行している前提 (thisはActivityのインスタンスを指す）.
+        // Google Play Servicesがインストールされていて使用出来る状態かをチェック. 使用できないならエラー表示で終了.
+        final int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            GooglePlayServicesUtil.getErrorDialog(resultCode, this, 0).show();
+            return;
+        }
+
         setContentView(R.layout.map_view);
 
         String latlon = getIntent().getStringExtra("LATLON");
@@ -52,8 +62,8 @@ public class PointMapView extends FragmentActivity {
             Log.d(TAG, "You must update Google Maps.");
             finish();
         }
-        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(mLatLng, 18);
-        map.moveCamera(cu);
+        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(mLatLng, 16);
+        map.animateCamera(cu, 3000, null);
 
         // マーカー
         map.addMarker(new MarkerOptions().position(mLatLng).title(mPlaceName)
