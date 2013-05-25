@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -115,5 +117,24 @@ public class PointMapView extends FragmentActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(0, 0, 0, "免責事項");
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Legal Notices(免責事項)
+        String LicenseInfo = GooglePlayServicesUtil
+                .getOpenSourceSoftwareLicenseInfo(getApplicationContext());
+        AlertDialog.Builder LicenseDialog = new AlertDialog.Builder(PointMapView.this);
+        LicenseDialog.setTitle("免責事項");
+        LicenseDialog.setMessage(LicenseInfo);
+        LicenseDialog.show();
+
+        return super.onOptionsItemSelected(item);
     }
 }
